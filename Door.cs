@@ -5,14 +5,17 @@ using System.Collections.Generic;
 public class Door
 {
     // delegates
-    public delegate void Clicked();
+    public delegate void Clicked(int doorNumber);
     // properties
     public double X { get; private set; }
     public double Y { get; private set; }
     private Bitmap doorBitmap;
     private Clicked clicked;
-    public Door(double x, double y, ref Clicked clickedHandler)
-    {
+
+    private int _doorNumber; 
+
+    public Door(double x, double y, ref Clicked clickedHandler, int doorNumber)
+    {   _doorNumber = doorNumber;
         X = x;
         Y = y;
         doorBitmap = new Bitmap("door1", "resources/images/door.jpeg");
@@ -29,7 +32,7 @@ public class Door
 
         if (SplashKit.MouseClicked(MouseButton.LeftButton) && mouseX > X && mouseX < X + 150 && mouseY >Y && mouseY<Y +150)
         {
-            clicked();
+            clicked(_doorNumber);
         };
 
     }

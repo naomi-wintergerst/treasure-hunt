@@ -1,5 +1,6 @@
 using System;
 using SplashKitSDK;
+using System.Collections.Generic;
 
 public class TreasureHunt
 {
@@ -17,12 +18,18 @@ public class TreasureHunt
     public Door door3;
     public int _score { get; private set; }
 
+    public List<int> treasureDoorList; 
+
     public int score = 0;
+    public int currentRoom; 
+
+    public Potion potion; 
     public enum GameState
     {
         Room,
         Monster,
         Treasure,
+        Potion, 
         GameOver
     };
     public GameState gameState;
@@ -32,6 +39,7 @@ public class TreasureHunt
         gameOver = new GameOver(gamewindow);
         treasure = new Treasure(137, 137);
         monster = new Monster(75, 75);
+        potion = new Potion(137, 137);
         gameState = GameState.Room;
         myScoreFont = SplashKit.LoadFont("NanumGothic", "resources/fonts/NanumGothic-Regular.otf");
 
@@ -39,16 +47,44 @@ public class TreasureHunt
         _playerLives = 3;
         Door.Clicked clickedHandler = new Door.Clicked(DoorClicked);
         // doorBitmap = new Bitmap("door1", "resources/images/door.jpeg");
-        door1 = new Door(350, 150, ref clickedHandler);
-        door2 = new Door(0, 150, ref clickedHandler);
-        door3 = new Door(175,175, ref clickedHandler);
+        door1 = new Door(0, 150, ref clickedHandler, 1);
+        door2 = new Door(175,175, ref clickedHandler, 2);
+        door3 = new Door(350, 150, ref clickedHandler, 3);
         _gameWindow = gamewindow;
+
+        currentRoom = 0; 
+
+        treasureDoorList = new List<int>();
+        treasureDoorList.Add(1);
+        treasureDoorList.Add(2);
+        treasureDoorList.Add(3);
+        treasureDoorList.Add(1);
+        treasureDoorList.Add(3);
+        treasureDoorList.Add(2);
+        treasureDoorList.Add(1);
+        treasureDoorList.Add(1);
+        treasureDoorList.Add(3);
+        treasureDoorList.Add(2);
+
+
+
+
+
+
+
+
     }
-    public void DoorClicked()
+    public void DoorClicked(int doorNumber)
     {
-        float dice = SplashKit.Rnd();
-        if (dice > 0.5)
+        int treasureDoor = treasureDoorList[currentRoom];
+        if (currentRoom == 4 && doorNumber ==treasureDoor){
+            _playerLives= _playerLives +1; 
+            currentRoom = currentRoom+1; 
+            gameState = GameState.Potion;
+        }
+        else if (doorNumber == treasureDoor)
         {
+            currentRoom = currentRoom +1; 
             score = score + 5 + Convert.ToInt32(500.0 * SplashKit.Rnd());
             //code for score on screen
             gameState = GameState.Treasure;
@@ -64,6 +100,12 @@ public class TreasureHunt
             gameState = GameState.GameOver;
             gameOver.playerScore = score; 
         }
+        if (currentRoom == treasureDoorList.Count)
+        {
+            gameState = GameState.GameOver;
+            gameOver.playerScore = score; 
+            gameOver.winner = true; 
+        }
     }
 
     public void HandleInput()
@@ -77,6 +119,7 @@ public class TreasureHunt
                 break;
             case GameState.Treasure:
             case GameState.Monster:
+            case GameState.Potion:
                 if (SplashKit.MouseClicked(MouseButton.LeftButton))
                 {
                     gameState = GameState.Room;
@@ -88,6 +131,8 @@ public class TreasureHunt
                     quit = true; 
                 }
             break;
+           
+            
 
         }
 
@@ -111,6 +156,9 @@ public class TreasureHunt
                 break;
             case GameState.Treasure:
                 treasure.Draw();
+                break;
+            case GameState.Potion:
+                potion.Draw();
                 break;
             case GameState.Monster:
                 monster.Draw();
